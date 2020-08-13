@@ -99,6 +99,24 @@ are known as the \emph{Karush--Kuhn--Tucker} (KKT) conditions. For any convex op
 %If $(\mathbf{x}^{*}, \mu^{*})$ is a saddle point of $L(\mathbf{x}, \mu)$, $\mathbf{x}$ in a convex set $\textbf{X}$ and $\mu \geq 0$, then $\mathbf{x}^{*}$ is an optimal vector for the above optimization problem. Furthermore, of $f$ and $g_{i}$ are convex in $\mathbf{x}$ and there exists $\mathbf{x_{0}}\in \mathbf{X}$ such that $\mathbf{g}(\mathbf{x}_{0}) < 0$. Then associated with $\mathbf{x}^{*}$ there exists a nonnegative $\mu^{*}$ such that $L(\mathbf{x}^{*}, \mu^{*})$ is a saddle point. 
 \end{theorem}
 
+\section{Discussion with Nima}
+\subsection{Data sources}
+There are several sources of data that we can use for this project:
+\begin{itemize}
+	\item The US Energy Information Administration, \url{https://www.eia.gov/maps/}, contains maps that can be filtered to show the crude pipelines and an interactive map displaying all the refineries and other data.
+	\item The Alberta Energy Regulator, \href{https://www.aer.ca/providing-information/data-and-reports/statistical-reports/st98/statistics-and-data.html}{here} provides an annual energy report and includes the data sets used to generate the reports known as the ST98. Also see the statistical reports available \href{https://www.aer.ca/providing-information/data-and-reports/statistical-reports.html}{here}.
+	\item Oil Sands Magazine \url{https://www.oilsandsmagazine.com/projects/crude-oil-liquids-pipelines} has a lot of data including maps that show the toll rates for oil and the production capacity at various sites.
+\end{itemize}
+\subsection{Market characteristics}
+There are many miscellaneous market characteristics of note that are written here:
+\begin{itemize}
+	\item{Rail is the most expensive method of transport and costs \$17 per barrel. The total rail capacity is 300,000 barrels per day.}
+	\item{WCS trades as a basis to WTI. That is, if WCS is \$40 and WTI \$50, it is often said that WCS is -\$10. That is, WCS is worth \$10 less than WTI. This basis is taken to include the difference in transportation costs from Alberta to Cushing, and a grade adjustment. The grade adjustment is said to be negligible. Further, note that the differential between Heavy and Light oil is about \$5 per barrel.}
+	\item{Note that as a result of COVID-19, the demand for US oil dropped from 17mm barrels to 13mm barrels per day. Given that Canada only produces 4mm barrels per day, this was a substantial drop in demand.}
+	\item{There are two notable sources of pipeline disruption. The most notable source of disruption are related to the keystone pipeline. In particular, Nima recalls a disruption in 2019 in possibly November or December, and a disruption in 2017 in January.}
+	\item{Traders use what is known as a calendar month average. I don't think this will be too important but remember this when considering how traders might work.}
+	\item{The oil price spreads generally follow a mean reverting process, so an OU process is going to be a good candidate.}
+\end{itemize}
 \bibliographystyle{amsplain}
 \bibliography{project}
 
