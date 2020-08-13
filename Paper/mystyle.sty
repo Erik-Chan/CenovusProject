@@ -1,0 +1,138 @@
+\ProvidesPackage{mystyle}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{cite}
+\usepackage{graphicx}
+\graphicspath{{Images/}}
+\usepackage[outdir=./Images/]{epstopdf}
+\usepackage{mathrsfs}
+\usepackage{enumerate}
+\usepackage{float}
+%\usepackage[libertine]{newtxmath}
+\usepackage{optidef}
+\usepackage{xcolor}
+\usepackage[hyphens,spaces,obeyspaces]{url}
+\usepackage[pagebackref=true]{hyperref}
+\usepackage[xindy]{imakeidx}
+\usepackage{setspace}
+%\usepackage[chapter]{algorithm} 
+\usepackage{algpseudocode}
+\usepackage[title]{appendix}
+
+%\usepackage[nottoc,numbib]{tocbibind}
+
+
+\RequirePackage{geometry}
+\RequirePackage{setspace}
+
+
+
+\makeatletter
+\let\c@table\c@figure % for (1)
+\let\ftype@table\ftype@figure % for (2)
+\makeatother
+
+%\usepackage{mathptmx}
+\usepackage{glossaries}
+\hypersetup{%
+    colorlinks,
+    linkcolor={red!60!black},
+    citecolor={green!60!black},
+    urlcolor={blue!60!black}
+}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}
+\newtheorem*{example}{Example}
+\newtheorem*{notation}{Notation}
+\newtheorem*{remark}{Remark}
+\newtheorem{question}{Question}
+\newtheorem{solution}{Solution}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\V}{\mathbb{V}}
+\newcommand{\dx}{\operatorname{d}\!x}
+\newcommand{\dt}{\operatorname{d}\!t}
+\newcommand{\dd}[1]{\operatorname{d}\!#1}
+\newcommand\myeq{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny def}}}{=}}}
+
+
+
+
+
+
+
+
+
+
+%%
+%% Commands for the thesis title page
+%%
+\def\dept#1{\gdef\@dept{\uppercase{#1}}}
+\def\degree#1{\gdef\@degree{\uppercase{#1}}}
+\def\monthname#1{\gdef\@monthname{\uppercase{#1}}}
+\def\gradyear#1{\gdef\@gradyear{#1}}
+\def\thesis#1{\gdef\@thesis{\uppercase{#1}}}
+\def\author#1{\gdef\@author{#1}}
+
+
+
+
+%%   ****************************************                         %%
+%%   *       FRONT MATTER SECTIONS          *                         %%
+%%   ****************************************                         %%
+
+%% Make frontmatter sections appear in normal 
+%% font in the table of contents, Mainmatter
+%% sections should appear normal.
+
+\if@unbold
+  \let\bforigdefault\bfdefault
+  \let\oldfrontmatter\frontmatter
+  \renewcommand{\frontmatter}{\oldfrontmatter\addtocontents{toc}{\let\string\bfdefault\string\mddefault}}
+  \let\oldmainmatter\mainmatter
+  \renewcommand{\mainmatter}{\addtocontents{toc}{\let\string\bfdefault\string\bforigdefault}\oldmainmatter}
+\fi
+
+
+
+
+%% *** Define addsymbol macro for list of symbols ***
+\def\addsymbol #1: #2{$#1$ \> \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \   \parbox{5in}{#2}\\}
+
+
+
+
+
+
+
+
+%%    ****************************************                        %%
+%%    *             PAGE STYLES              *                        %%
+%%    ****************************************                        %%
+
+%% Redefine plain page style to have page numbers in upper 
+%% outer corner if twoside option is used (as regulated by
+%% the University of Calgary 2014 thesis guidelines). 
+%% Normally, theses should not be printed double sided
+%% and page numbers should always be in the bottom
+%% center of the page. 
+%%
+%% Page number location must be consistent throughout the 
+%% entire document.
+
+\if@twoside
+\def\ps@plain{\let\@mkboth\@gobbletwo%
+     \def\@oddhead{\reset@font\hfil\thepage}
+     \let\@oddfoot\@empty%
+     \def\@evenhead{\reset@font\thepage\hfil}%
+     \let\@evenfoot\@empty
+     }
+\fi

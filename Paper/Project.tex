@@ -1,0 +1,105 @@
+\documentclass[11pt, letterpaper,nounbold]{article}
+\usepackage{mystyle}
+\usepackage{indentfirst}
+\pagestyle{plain}
+\geometry{margin={0.6in}}
+
+\usepackage{multicol}
+\usepackage{optidef}
+
+\begin{document}
+
+\section{Problem Proposal}
+Modelling Canadian Heavy Crude Congestion pricing using Capacitated Transport networks 
+Problem Proposal:
+
+Alberta produces $\sim$4MM bbls/d (barrels per day) of crude oil of which $\sim$3 MM bbls/d is considered ``heavy oil''. Majority or 2/3 of Canadian heavy oil is consumed in PADD II and 1/3 in USGC refining center. The PADD III (also known as USGC - United States Coast Guard, see Figure~\ref{PADDsMap})  is considered a marginal consumption point for Canadian crude where the “last barrel” or marginal barrel is consumed. Canadian crude can reach the USGC through number of pipe options: Enbridge mainline, Express, and Keystone, or rail from either Edmonton or Hardisty. The cost of transport of the last barrel from Alberta to USGC is going to set the price of Canadian heavy benchmark (WCS) in Alberta. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{PADDsMap}
+\caption{Strategic and Military Pipeline for Transmission of Petroleum map. Available at \href{https://www.eia.gov/todayinenergy/detail.php?id=4890}{\nolinkurl{eia.gov}}} \label{PADDsMap}
+\end{figure}
+
+
+Pipe is considered a cheapest mode of transport of Canadian crude to the demand markets. The total offtake capacity from Alberta is on average less than the total available production. This leads often to the requirement of “call on rail” (the amount of rail capacity needed to clear an oversupply of barrels in the WCSB, see \href{https://atbcapitalmarkets.com/insights/north-american-crude-by-rail}{\nolinkurl{atbcapitalmarkets}}) or shut-ins (implementing a production cap lower than the available output of a specific site) to balance the market which in turn leads to significant price response. 
+Prices are generally integrated if they respond to the same price shock. In reality looking at the USGC--Alberta spread pricing, we see a regular breakdown of the price relationship or ``congestion pricing'' (regulating demand by increasing prices without increasing supply). This is due to the fact that transient ``sub-markets'' can be form in a capacitated transport system.   
+
+
+The question is using stochastic transport optimization (following a similar method to \cite{Pavlin2019} and \cite{Zhu2018}) can we model and answer the following questions:
+
+\begin{itemize}
+	\item When there are documented disruptions in the transport system can we predict how large the congestion surcharge was and how did prices respond to the disruption?
+	\item Can we predict the occurrence of congestion by perturbing input factors in the system?
+	\item How does shape and connections in the transport network contribute to the propensity for frequency of the congestion and magnitude of congestion surcharge?
+\end{itemize}
+
+
+There is a fantastic work performed looking at the US gasoline market that can be used as a guide ({\color{red} where is the guide?}) and starting point to look at the Canadian crude oil transport network.
+The majority of the data: (1) Pipe Tolls and Tariffs (2) Capacities (3) Supply and Demand factors are publicly available. (4) Pricing data and some of the historical flow data that is used for benchmarking and testing the models can be made available with some degree of modifications and can be anonymized.      
+
+
+\section{I. Y. Zhu's paper notes}
+The competitive market is modeling with what we call the welfare-maximizing market allocation problem:
+\begin{maxi*}|s|
+{\vec{f},\vec{b}}{\sum_{s\in \mathcal{S}}W_{s}(b_{s}) - \sum_{(i,j)\in \mathcal{E}} c_{ij}f_{ij} - \sum_{k\in \mathcal{K}} W_{k}(b_{k}) }
+{}{}
+\addConstraint{-b_{s} + \sum_{i\in I(s)} f_{si} - \sum_{j\in O(s)} f_{sj} = 0, \qquad &\forall s\in \mathcal{S}}
+\addConstraint{b_{k} + \sum_{i\in I(k)} f_{ik} - \sum_{j\in O(k)} f_{kj} = 0, \qquad &\forall k \in \mathcal{K}}{}
+\addConstraint{0 \leq f_{ij} \leq u_{ij}, \quad \forall(i,j)\in \mathcal{E}}
+\addConstraint{b_{s} \geq 0, \quad \forall s\in \mathcal{S}}
+\addConstraint{b_{k} \geq 0, \quad \forall k\in \mathcal{K}}
+\end{maxi*}
+    \begin{multicols}{2}
+    \begin{itemize}
+        \item $\mathcal{S}, \mathcal{K}$ denotes the nodes in a network $\mathcal{N}$ populated by consumers and producers, respectively. 
+        \item For a node $s\in \mathcal{S}$ ($k\in \mathcal{K}$), $W_{s}(b_{s})$ ($W_{k}(b_{k})$) is the welfare (production cost) for consuming (producing) $b_{s}$ ($b_{k}$) units. 
+        \item Assume $W_{s}$ is strictly concave, increasing, and differentiable. Assume $W_{k}$ is convex, increasing and differentiable. 
+        \item $\mathcal{E}$ denotes the set of transportation links $(i,j)$ from a node $(i,j)$ (i.e., it is the edge set of a directed graph)
+        \item $f_{ij}$ denotes the flow from $i$ to $j$ on link $(i,j) \in \mathcal{E}$. $f_{i,j}$ is nonnegative, and bounded above by the capacity $u_{ij}$, with per-unit transportation cost $c_{i,j}$
+        \item $I(j) = {(n,j) \in \mathcal{E}| n\in \mathcal{N}}$ The set of links that flow into the $j$th node from $n$.
+        \item $O(i) = {(i,n) \in \mathcal{E} | n \in \mathcal{N}}$ The set of sets that flow out of the $i$th node to $n$.
+        \item $\mathcal{P}(i,j)$ denotes the set of paths from $i$ to $j$, and $p_{ij}^{q}$ the cost of a path $q$ which is the sum of costs of the links from $i$ to $j$.
+    \end{itemize}
+    \end{multicols}
+ In words, we are maximizing the welfare of the consumers less the cost of transportation and less the cost of production subject to the flow balancing, i.e., all that is produced is consumed.
+ 
+\begin{defn}[Slater's condition]
+For an optimization problem of the form 
+	\begin{mini*}|s|
+		{}{f_{0}(x)}{}{}
+		\addConstraint{f_{i}(x) \leq 0, \qquad i = 1,\dots, m,}
+		\addConstraint {Ax = b}
+	\end{mini*}
+If there exists an $x\in \operatorname{relint}\mathcal{D} = \cap_{i=0}^{m} \operatorname{dom}(f_{i})$ such that
+	\[f_{i}(x) < 0, \qquad i = 1,\dots, m, \qquad Ax = b,\]
+we say that the optimization problem satisfies \emph{Slater's condition}. That is, the optimization problem has an interior point in the feasible region. 
+\end{defn}
+\begin{theorem}
+Given the following optimization problem 
+	\begin{align*}
+		&\text{Optimize}\qquad  f(\mathbf{x})\\
+		&\text{Subject to}\\
+		&\qquad g_{i}(\mathbf{x})\leq 0,\,  h_{j}(\mathbf{x}) = 0.
+	\end{align*}
+with associated Lagrangian
+	\[L(\mathbf{x}, \mu,\lambda) = f(\mathbf{x}) + \mu^{T}\mathbf{g(x)} + \lambda^{T}\mathbf{h(x)}.\]
+Let $x^{\star}$ and $(\lambda^{\star}, \mu^{\star})$ be any primal and dual optimal points with zero duality gap. Then $x^{\star}$ is the minimizer of $L(x, \lambda^{\star}, \mu^{\star})$ and hence its gradient vanishes at $x^{\star}$,
+	\[\nabla f_{0}(x^{\star}) + \sum_{i=1}^{m} \lambda_{i}^{\star} \nabla f_{i}(x^{\star}) + \sum_{i=1}^{p}\mu_{i}\nabla h_{i}(x^{\star}) = 0.\]	
+In particular,
+	\begin{align*}
+		f_{i}(x^{\star}) &\leq 0,\qquad  i = 1, \dots, m\\
+		h_{i}(x^{\star}) &= 0,\qquad  i = 1\dots, p\\
+		\lambda_{i}^{\star} &\geq 0,\qquad  i = 1,\dots, m\\
+		\lambda_{i}^{\star}f_{i}(x^{\star}) &= 0,\qquad  i = 1,\dots, m.
+	\end{align*}
+These four equations together with 
+	\[\nabla f_{0}(x^{\star}) + \sum_{i=1}^{m} \lambda_{i}^{\star} \nabla f_{i}(x^{\star}) + \sum_{i=1}^{p}\mu_{i}\nabla h_{i}(x^{\star}) = 0\]
+are known as the \emph{Karush--Kuhn--Tucker} (KKT) conditions. For any convex optimization problem with differentiable objective and constraint functions, any points that satisfy the KKT conditions are primal and have zero duality gap. Further, if Slater's condition is satisfied, these conditions are necessary and sufficient for optimality. See \cite[Ch.~5]{Boyd2009}
+%If $(\mathbf{x}^{*}, \mu^{*})$ is a saddle point of $L(\mathbf{x}, \mu)$, $\mathbf{x}$ in a convex set $\textbf{X}$ and $\mu \geq 0$, then $\mathbf{x}^{*}$ is an optimal vector for the above optimization problem. Furthermore, of $f$ and $g_{i}$ are convex in $\mathbf{x}$ and there exists $\mathbf{x_{0}}\in \mathbf{X}$ such that $\mathbf{g}(\mathbf{x}_{0}) < 0$. Then associated with $\mathbf{x}^{*}$ there exists a nonnegative $\mu^{*}$ such that $L(\mathbf{x}^{*}, \mu^{*})$ is a saddle point. 
+\end{theorem}
+
+\bibliographystyle{amsplain}
+\bibliography{project}
+
+\end{document}
