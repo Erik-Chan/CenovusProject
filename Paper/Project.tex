@@ -7,6 +7,13 @@
 \usepackage{multicol}
 \usepackage{optidef}
 
+%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\S}{\mathcal{S}}
+\newcommand{\T}{\mathcal{T}}
+
+
+
+
 \begin{document}
 
 \section{Problem Proposal}
@@ -117,6 +124,44 @@ There are many miscellaneous market characteristics of note that are written her
 	\item{Traders use what is known as a calendar month average. I don't think this will be too important but remember this when considering how traders might work.}
 	\item{The oil price spreads generally follow a mean reverting process, so an OU process is going to be a good candidate.}
 \end{itemize}
+
+\section{SEM with constraints}
+\begin{align*}
+z(\beta) : = \text{minimize \qquad } &\sum_{s\in \S} \alpha_{s}\\
+	\text{subject to \qquad} &\lambda_{s}^{t} = \eta^{t} + \rho_{s} + \epsilon_{s}^{t} + w_{s}^{t},\qquad \forall s \in \S, t \in \T,\\
+		& \epsilon_{s}^{t} \geq -\alpha_{s},\qquad \forall s\in \S, t \in \T\\
+		& \epsilon_{s}^{t} \leq \alpha_{s},\qquad \forall s\in \S, t\in \T\\
+		& w_{s}^{t} \leq \psi^{t}M, \qquad \forall s\in \S, t \in \T,\\
+		&\sum_{t\in \T} \psi^{t} \leq \lfloor \beta T\rfloor\\
+		&w_{s}^{t} \leq \pi_{s}^{t} M, \quad \forall s\in \S, t \in \T\\
+		&\epsilon_{s}^{t} + (1-\pi_{s}^{t})M \geq \alpha_{s}, \qquad \forall s\in \S, t\in \T,\\
+		&\sum_{s}\gamma_{s}^{t} \geq \psi^{t}, \forall t\in \T\\
+		&\epsilon_{s}^{t} \leq -\alpha_{s} + (1-\gamma_{s}^{t})M, \qquad \forall s\in \S, t\in \T\\
+		&\gamma_{s}^{t}, \psi^{t}, \pi_{s}^{t}\in \{0, 1\}, \qquad \forall s\in \S,t\in \T\\
+		&w_{s}^{t} \geq 0 \qquad \forall s\in \S, t\in \T
+\end{align*}
+Note that under the change of variables $\overline{w}_{s}^{t}: = w_{s}^{t} + \epsilon_{s}^{t} - \alpha_{s}$, this can be simplified to
+\begin{align*}
+z(\beta) : = \text{minimize \qquad } &\sum_{s\in \S} \alpha_{s}\\
+	\text{subject to \qquad} &\lambda_{s}^{t} = \eta^{t} + \rho_{s} + \alpha_{s} + \overline{w}_{s}^{t},\qquad \forall s \in \S, t \in \T,\\
+		& \overline{w}_{s}^{t} \geq -2\alpha_{s},\qquad \forall s\in \S, t \in \T,\\
+		& \overline{w}_{s}^{t} \leq \psi^{t} M,\qquad \forall s\in \S, t\in \T,\\
+		&\sum_{t\in \T} \psi^{t} \leq \lfloor \beta T\rfloor,\\
+		&\overline{w}_{s}^{t} \leq -2\alpha_{s} + (1-\gamma_{s}^{t})M, \qquad \forall s \in \S, t\in \T,\\
+		&\sum_{s}\gamma_{s}^{t} \geq \psi^{t},\qquad \forall t\in \T,\\
+		&\gamma_{s}^{t}, \psi^{t} \in \{0,1\}, \qquad \forall t\in \T.
+\end{align*}
+Given optimal values of $\overline{w}_{s}^{t}$ we can return to the original $w_{s}^{t}$ and $\epsilon_{s}^{t}$ as follows: If $\overline{w}_{s}^{t} \geq 0$, then $w_{s}^{t} = \overline{w}_{s}^{t}$ and $\epsilon_{s}^{t} = \alpha_{s}$. If $\overline{w}_{s}^{t} < 0$, then $w_{s}^{t} = 0$ and $\epsilon_{s}^{t} = \overline{w}_{s}^{t} + \alpha_{s}$. Note that for larger data sets, we may need to use an additional set of constraints to reduce the scope of the problem. See \cite[pp.~23--24]{Zhu2020} for details.
+\subsection{SEM notes}
+This model takes as an input a set of spatial prices $\pmb{\lambda} = \{\lambda_{s}^{t}\}_{s\in \S, t\in \T}$ and returns an estimate of congestion over a given time horizon. The variable $\eta^{t}$ captures a node-invariant underlying trend, $\rho_{s}, \epsilon_{s}^{t}$, and $\alpha_{s}$ capture time-invariant neutral bands. All the remaining price variation is captured by the variables $w_{s}^{t}$ representing surcharges. We represent the constraints on $w_{s}^{t} by \mathcal{W}\subseteq \mathbb{R}^{+}$. That is, $\mathcal{W}$ restricts the domain of $w_{s}^{t}$.
+
+If prices differences are perfectly constant , theoptimal objective value will be zero and the prices $\lambda_{s}^{t}$ can be explained entirely by the node-invariant $\eta^{t}$ and the time-invariant $\rho_{s}$. Consider perturbing the $\lambda_{s}^{t}$ with Ornstein--Uhlenbeck stochastic processes to avoid this. Similarly, we can use this as a test that the optimization routine is working.
+
+The parameters
+	\[w_{s}^{t} \leq \psi^{t} M, \sum_{t\in \T} \psi^{t} \leq \lfloor \beta T\rfloor, \psi^{t} \in \{0,1\}\]
+represent time constraints. The parameter $\psi^{t}$ is an indicator variable for when the congestion surcharge is free ($\psi^{t} =1$) or fixed to zero ($\psi^{t} = 0$). The parameter $M$ represents a large value such that $w_{s}^{t}$ will never reach its upper bound when $\psi^{t} = 1$. Finally $\beta$ is a fraction of time periods for which the underlying network is congested. The remaining $\lceil (1-\beta) T\rceil$ periods with no congestion (and hence $\psi^{t} = 0$) are used to fit $\rho_{s}$  so that we can precisely estimate $w_{s}^{t}$ when $\psi^{t} = 1$. The goal of these is to ensure that $\eta^{t}$, (resp.~$w_{s}^{t}$) are the largest (resp. smallest) possible value out of the set of optimal solutions.
+\subsubsection*{Questions}
+What is $\alpha_{s}$? It must be $\lambda_{s}-W^{\prime}_{s}(b_{s})$ from \cite[p.~7]{Zhu2020}
 \bibliographystyle{amsplain}
 \bibliography{project}
 

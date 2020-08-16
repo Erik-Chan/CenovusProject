@@ -17,4 +17,18 @@
   note   = {\url{https://tspace.library.utoronto.ca/bitstream/1807/91504/3/Zhu_Ian_Yihang_201811_MAS_thesis.pdf}},
 }
 
+@Book{Boyd2009,
+  title     = {Convex Optimization},
+  publisher = {Cambridge University Press},
+  year      = {2009},
+  author    = {Stephen P. Boyd},
+  note      = {available online at: \url{https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf}},
+}
+
+@Unpublished{Zhu2020,
+  author = {John R. Birge and Timothy C. Y. Chan and J. Michael Pavlin and Ian Yihang Zhu},
+  title  = {Spatial Price Integration in Commodity Markets with Capacitated Transportation Networks},
+  note   = {Unpublished},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}
