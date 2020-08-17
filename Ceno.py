@@ -125,7 +125,7 @@ if toggle:
     timeline = np.linspace(0., 1., 100)
     # x = my_ou(x0=1, paths=3, steps=100)(timeline)
     x = my_ou(x0=30, k=2, theta=30, sigma=5, paths=3, steps=100)(timeline)
-    #print([row[0] for row in x])
+    # print([row[0] for row in x])
     if plot_toggle:
         plt.plot(x)
         plt.show()
@@ -145,6 +145,7 @@ if MSE:
     edges.add_edge(2, 3)
     # costs = {e:np.random.uniform(0,1) for e in edges.get_edge()}
     transport_costs = {tuple(e): np.random.uniform(0, 1) for e in edges.get_edge()}
+    # transport_costs = {(1,2): }
 
     # Note that this should eventually look like [[something for _t in t] for s in verts.get_vertex()]
     # This current version just populates placeholder values.
@@ -160,7 +161,7 @@ if MSE:
 
     # These are the psi^t
     psi_t = [model.add_var(var_type=BINARY) for _t in t]
-    
+
     # These are the gamma_s^t
     gamma_st = [[model.add_var(var_type=BINARY) for _t in t] for s in verts.get_vertex()]
 
@@ -180,7 +181,7 @@ if MSE:
     # Constraints
     ###################################################################################################################
 
-    #Create the constraints \lambda_{s}^{t} = \eta^{t} + \rho_{s} + \alpha_{s} + \bar{w}_{s}^{t}
+    # Create the constraints \lambda_{s}^{t} = \eta^{t} + \rho_{s} + \alpha_{s} + \bar{w}_{s}^{t}
     for s in range(len(verts)):
         rho = rho_s[s]
         alpha = alpha_s[s]
@@ -192,29 +193,30 @@ if MSE:
             localPrice = localPrice_t[_t]
             model += eta + rho + alpha + til_W == localPrice
 
-    #Nonnegativity for alpha and rho
+    # Nonnegativity for alpha and rho
     for s in range(len(verts)):
         model += alpha_s[s] >= 0
         model += rho_s[s] >= 0
 
-    #Constraint (20e)
+    # Constraint (20e)
     beta = 0.15
-    model += xsum(psi_t) <= np.floor(beta*T)
+    model += xsum(psi_t) <= np.floor(beta * T)
 
-    #Constraint (20f)
-    #Placeholder for M
-    M = 100
+    # Constraint (20f)
+    # Placeholder for M
+    M = np.max(localPrices) - np.min(localPrices)
+
     for s in range(len(verts)):
         til_W_t = til_W_st[s]
         gamma_t = gamma_st[s]
         alpha = alpha_s[s]
         for _t in range(len(t)):
-            model += til_W_t[_t] <= -2*alpha + (1-gamma_t[_t])*M
+            model += til_W_t[_t] <= -2 * alpha + (1 - gamma_t[_t]) * M
 
-    #Constraint (20g)
-    #for _t in range(len(t)):
+    # Constraint (20g)
+    # for _t in range(len(t)):
 
-    #Transposing gamma_st
+    # Transposing gamma_st
     gamma_ts = [list(i) for i in zip(*gamma_st)]
     for _t in range(len(t)):
         model += xsum(gamma_ts[_t]) >= psi_t[_t]
@@ -225,3 +227,7 @@ if MSE:
         model.optimize()
         print('The solution at the minimum is :', alpha_s[0].x, alpha_s[1].x, alpha_s[2].x)
         print('The solution at the minimum is :', rho_s[0].x, rho_s[1].x, rho_s[2].x)
+        eta_list = []
+        for _t in range(len(t)):
+            eta_list.append(eta_t[_t].x)
+        print('The solution at the minimum is:', eta_list)
