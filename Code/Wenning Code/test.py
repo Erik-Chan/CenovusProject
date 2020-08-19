@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import sdepy
+
 import itertools
 from itertools import product
 from sys import stdout as out
