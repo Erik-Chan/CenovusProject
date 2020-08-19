@@ -15,14 +15,14 @@ plt.rcParams['lines.linewidth'] = 1.
 np.random.seed(1)
 
 
-@sdepy.integrate
-def my_ou(t, x, theta=1., k=1., sigma=1.):
-    return {'dt': k * (theta - x), 'dw': sigma}
-
 url = 'https://raw.githubusercontent.com/Erik-Chan/Crude-Oil-Data/master/Data/Cleaned_WTI_WSC.csv'
+
 df = pd.read_csv(url)
+
 df['DateTime'] = pd.to_datetime(df['DateTime'])
+
 column_names = ['DateTime', 'WTI', 'WCS', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']
+
 df = df.reindex(columns=column_names)
 
 priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
