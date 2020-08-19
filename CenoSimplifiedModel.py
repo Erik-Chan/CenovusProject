@@ -27,8 +27,6 @@ df = df.reindex(columns=column_names)
 
 priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
 
-priceData.rename(columns = {'WCS_Interpolated': 'WCS_I', 'WTI_Interpolated': 'WTI_I'})
-
 #This is just a switch to disable the optimization part of the code when testing things to reduce the runtime
 MSE = 1
 
