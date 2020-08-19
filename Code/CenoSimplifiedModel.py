@@ -31,6 +31,12 @@ priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_dif
 
 # This is just a switch to disable the optimization part of the code when testing things to reduce the runtime
 MSE = 1
+###################################################################################################################
+# This follows the model on page 21 here:
+# http://individual.utoronto.ca/izhu/files/Zhu_FinalPaper2020.pdf
+###################################################################################################################
+
+
 
 if MSE:
     # time in days
