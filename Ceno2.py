@@ -19,40 +19,6 @@ np.random.seed(1)
 def my_ou(t, x, theta=1., k=1., sigma=1.):
     return {'dt': k * (theta - x), 'dw': sigma}
 
-#The edge class is used to define the set of links in a network model. This class is largely incomplete
-#however, the intent is just to store the connectivity between nodes.
-class Edge:
-
-    # Initialize the edge set
-    def __init__(self, size=0):
-        self.edge = []
-        self.edge = [[i, i] for i in range(0, size)]
-        self.size = size
-
-    # Add edges
-    def add_edge(self, v1, v2):
-        if [v1, v2] in self.edge:
-            print("Edge from %d to %d already exists" % (v1, v2))
-            return
-        self.edge.append([v1, v2])
-
-    # Remove edges
-    def remove_edge(self, v1, v2):
-        if [v1, v2] not in self.edge:
-            print("No edge between %d and %d" % (v1, v2))
-            return
-        self.edge.remove([v1, v2])
-
-    def __len__(self):
-        return self.size
-
-    def __add__(self, other):
-        add_edge(other[0], other[1])
-        return self
-
-    def get_edge(self):
-        return self.edge
-
 #The vertex class is just there to store the nodes used in the network model.
 class Vertex:
     # Initialize the vertex set
@@ -84,39 +50,13 @@ class Vertex:
         self.add_vertex(other)
         return self
 
-#This is a class used to broadly modify the parameters of the model. Currently this class is not used in the
-#optimization, but may get implemented later when the model gets more complex.
-class MSEopt:
-    def __init__(self, beta=0.3, sizeS=5, T=1):
-        self.x_sum = 0
-        self.beta = beta
-        self.sizeS = sizeS
-        self.T = T
-        self.obj_v_sum = 0
+url = 'https://raw.githubusercontent.com/Erik-Chan/Crude-Oil-Data/master/Data/Cleaned_WTI_WSC.csv'
+df = pd.read_csv(url)
+df['DateTime'] = pd.to_datetime(df['DateTime'])
+column_names = ['DateTime', 'WTI', 'WCS', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']
+df = df.reindex(columns=column_names)
 
-    def eval_obj_fun(self, obj_v):
-        self.obj_v_sum = np.sum(obj_v)
-        return self.obj_v__sum
-
-    def set_T(self, T):
-        assert isinstance(T, float)
-        self.T = T
-
-    def set_beta(self, beta):
-        self.beta = beta
-
-    def set_lambda_s(self, lmbda):
-        self.lmbda = lmbda
-
-    def set_M(self, lambda_s, vertex):
-        vertex_perms = itertools.permutations(S, 2)
-        m = max([sum(v) for v in list(vertex_perms)])
-        # Still need to maximize for all t
-        pass
-
-    def get_psi_u(self):
-        self.psi_u = np.floor(self.beta * self.T)
-        return self.psi_u
+priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
 
 #This is just a switch to disable the optimization part of the code when testing things to reduce the runtime
 MSE = 1
@@ -124,45 +64,13 @@ MSE = 1
 if MSE:
     # Time vector
     T = 1
-    t = np.linspace(0, T, 100)
+    t = np.linspace(0, T, len(priceData.index))
 
     # The set \mathcal{S} as in the paper
-    verts = Vertex(vertices=['Hardest', 'Boston', 'Cushing'])
+    verts = Vertex(vertices=['Hardest', 'Cushing'])
 
-    # This is the set of connectivity. Here, the graph is from Calgary to Boston, Calgary to Cushing, and Boston to Cushing
-    edges = Edge(size=3)
-    edges.add_edge(0, 1)
-    edges.add_edge(0, 2)
-    edges.add_edge(1, 2)
-    # costs = {e:np.random.uniform(0,1) for e in edges.get_edge()}
+    localPrices = priceData[['WCS_Interpolated', 'WTI_Interpolated']].values.tolist()
 
-    #Initialize transport costs with random values
-    transport_costs = {tuple(e): np.random.uniform(0, 1) for e in edges.get_edge()}
-
-    #Manual input of transportation costs
-    transport_costs[(0, 1)] = 5
-    transport_costs[(0, 2)] = 10
-    transport_costs[(1, 2)] = 8
-    transport_costs[(0, 0)] = 0
-    transport_costs[(1, 1)] = 0
-    transport_costs[(2, 2,)] = 0
-
-    # Note that this should eventually look like [[something for _t in t] for s in verts.get_vertex()]
-    # This current version just populates placeholder values.
-
-    # This is the \lambda_{s}^{t}
-    localPrices = my_ou(x0=30, k=2, theta=30, sigma=5, paths=3, steps=len(t))(t)
-    test = 0
-    if test:
-        # localPrices = my_ou(x0=30, k=2, theta=30, sigma=5, paths=3, steps=1000)(t)
-        localPrices1 = my_ou(x0=10, k=2, theta=10, sigma=10, paths=1, steps=len(t))(t)
-        localPrices2 = my_ou(x0=10, k=2, theta=10, sigma=10, paths=1, steps=len(t))(t)
-        localPrices3 = my_ou(x0=15, k=2, theta=10, sigma=10, paths=1, steps=len(t))(t)
-        localPrices1, localPrices2, localPrices3 = [i[0] for i in localPrices1],\
-                                                   [i[0] for i in localPrices2], [i[0] for i in localPrices3]
-        localPrices = list(zip(localPrices1, localPrices2, localPrices3))
-        print('my local prices are')
-        print(localPrices)
 
     #Initialize optimiation model object
     model = Model()
@@ -269,8 +177,8 @@ if MSE:
     if toggle_optimize:
         model.optimize()
         if display_parameters:
-            print('The solution for alpha_s at the minimum is :', alpha_s[0].x, alpha_s[1].x, alpha_s[2].x)
-            print('The solution for rho_s at the minimum is :', rho_s[0].x, rho_s[1].x, rho_s[2].x)
+            print('The solution for alpha_s at the minimum is :', alpha_s[0].x, alpha_s[1].x)
+            print('The solution for rho_s at the minimum is :', rho_s[0].x, rho_s[1].x)
             eta_list = []
             for _t in range(len(t)):
                 eta_list.append(eta_t[_t].x)
@@ -294,3 +202,20 @@ if MSE:
             #print(flat_gamma)
             flat_gamma = [gam.x for gam in flat_gamma]
             print('The sum of the gamma are:', sum(flat_gamma))
+
+            localPriceHardesty = np.array([row[0] for row in localPrices])
+            localPriceCushing = np.array([row[1] for row in localPrices])
+            localPricesDiff = np.array(priceData['WTI_WCS_diff'].values.tolist())
+            W_list = []
+            for _t in range(len(t)):
+                W_list.append(til_W_st[1][_t].x)
+            W_list = np.array([round(w, 2) for w in W_list])
+            #plt.plot(localPriceHardesty, label = 'Hardest')
+            #plt.plot(localPriceCushing, label = 'Cushing')
+            #plt.plot(localPricesDiff, label = 'Diff')
+            #plt.plot(localPriceHardesty+W_list, label = 'Hardesty + W')
+
+            plt.plot(W_list, label = 'Surcharge')
+            plt.plot(localPricesDiff, label = 'Spread')
+            plt.legend()
+            plt.show()
