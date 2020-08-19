@@ -102,7 +102,7 @@ if MSE:
             model += w_st[s][t] <= pi_st[s][t]*M
 
     # Constraint (17f)
-            model += eps_st[s][t] + (1-pi_st[s][t]) >= alpha_s[s]
+            model += eps_st[s][t] + (1-pi_st[s][t])*M >= alpha_s[s]
 
     # Constraint (17g)
             model += w_st[s][t] <= psi_t[t]*M
@@ -116,6 +116,7 @@ if MSE:
 
     # Constraint (17j)
     model += xsum(psi_t) <= beta*len(T)
+
     # Constraint (17l)
     for s in S:
         for t in T:
@@ -123,8 +124,8 @@ if MSE:
 
     # Set Non-negativity for alpha and rho
     #for s in range(len(verts)):
-    #    model += alpha_s[s] >= 0
-    #    model += rho_s[s] >= 0
+    #model += alpha_s[s] >= 0
+    #model += rho_s[s] >= 2.35
 
     ###################################################################################################################
     # Objective Function
@@ -148,11 +149,14 @@ if MSE:
 
             for s in S:
                 W_list = []
+                eps_list = []
                 for t in T:
                     W_list.append(w_st[s][t].x)
                     W_list = [round(w, 2) for w in W_list]
+                    eps_list.append(eps_st[s][t].x)
                 print('The solution for til_W at city {} is:'.format(s), W_list)
-
+                print('The solution for eps_st at node s is:'.format(s), eps_list)
+                print('The sum of eps at node s is:'.format(s), sum(eps_list))
             psi_list = []
             for t in T:
                 psi_list.append(psi_t[t].x)
