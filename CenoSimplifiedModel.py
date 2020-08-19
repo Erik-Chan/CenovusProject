@@ -20,11 +20,14 @@ df = pd.read_csv(url)
 
 df['DateTime'] = pd.to_datetime(df['DateTime'])
 
+df = df.sort_values(by=['DateTime'])
+
 column_names = ['DateTime', 'WTI', 'WCS', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']
 
 df = df.reindex(columns=column_names)
 
 priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
+
 
 # This is just a switch to disable the optimization part of the code when testing things to reduce the runtime
 MSE = 1
@@ -47,11 +50,12 @@ if MSE:
     ###################################################################################################################
     M = np.max(localPrices) - np.min(localPrices)
 
-    beta = 0.3
+    beta = 1
 
     eta_t = localPrices[:, 0]
     print('My eta_t are:', eta_t)
     plt.plot(eta_t)
+
     # plt.show()
 
     lambda_t = localPrices[:, 1]
@@ -61,6 +65,8 @@ if MSE:
     ###################################################################################################################
     # Variables
     ###################################################################################################################
+    #These are the eta_t
+    #eta_t = np.array([model.add_var() for t in T])
 
     # These are the alpha_s
     alpha_s = np.array([model.add_var() for s in S])
@@ -129,30 +135,32 @@ if MSE:
     ###################################################################################################################
     # Optional Constraints and Variables
     ###################################################################################################################
-    m = 5
+    toggle = 0
+    if toggle:
+        m = 5
 
 
-    def T_ub(t, m, T):
-        return min(len(T), t+m)
+        def T_ub(t, m, T):
+            return min(len(T), t+m)
 
 
-    def T_lb(t, m):
-        return max(0, t - m)
+        def T_lb(t, m):
+            return max(0, t - m)
 
 
-    nu_t = np.array([model.add_var(var_type=BINARY) for t in T])
-    # These end points may need to be say, t_end+1 etc but we get an index out or range
-    # if we do that. I think this should be fine.
-    for t in T:
-        t_star = t
-        t_end = T_ub(t, m, T)
-        psi_t_star = [psi_t[_t] for _t in range(t, t_end)]
-        model += xsum(psi_t_star) >= nu_t * (len(T) - t_end)
+        nu_t = np.array([model.add_var(var_type=BINARY) for t in T])
+        # These end points may need to be say, t_end+1 etc but we get an index out or range
+        # if we do that. I think this should be fine.
+        for t in T:
+            t_star = t
+            t_end = T_ub(t, m, T)
+            psi_t_star = [psi_t[_t] for _t in range(t, t_end)]
+            model += xsum(psi_t_star) >= nu_t * (len(T) - t_end)
 
-    for t in T:
-        t_star = T_lb(t, m)
-        nu_t_star = [nu_t[_t] for _t in range(t_star, t)]
-        model += psi_t[t] <= xsum(nu_t_star)
+        for t in T:
+            t_star = T_lb(t, m)
+            nu_t_star = [nu_t[_t] for _t in range(t_star, t)]
+            model += psi_t[t] <= xsum(nu_t_star)
 
     ###################################################################################################################
     # Objective Function
