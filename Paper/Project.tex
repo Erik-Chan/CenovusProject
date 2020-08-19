@@ -161,7 +161,7 @@ The parameters
 	\[w_{s}^{t} \leq \psi^{t} M, \sum_{t\in \T} \psi^{t} \leq \lfloor \beta T\rfloor, \psi^{t} \in \{0,1\}\]
 represent time constraints. The parameter $\psi^{t}$ is an indicator variable for when the congestion surcharge is free ($\psi^{t} =1$) or fixed to zero ($\psi^{t} = 0$). The parameter $M$ represents a large value such that $w_{s}^{t}$ will never reach its upper bound when $\psi^{t} = 1$. Finally $\beta$ is a fraction of time periods for which the underlying network is congested. The remaining $\lceil (1-\beta) T\rceil$ periods with no congestion (and hence $\psi^{t} = 0$) are used to fit $\rho_{s}$  so that we can precisely estimate $w_{s}^{t}$ when $\psi^{t} = 1$. The goal of these is to ensure that $\eta^{t}$, (resp.~$w_{s}^{t}$) are the largest (resp. smallest) possible value out of the set of optimal solutions.
 \section{SEM implementation notes}
-It appears that the current implementation of the model is independent of the choice of $\beta$ and does not admit feasible solutions for $T$ large.
+The role of $\beta$ serves a dual purpose. When $\psi^{t}$ is active, the optimization routine determines the set of values $w_{s}^{t}$ that determine the congestion surcharge. However, when $\psi^{t}$ is inactive, the remaining $(1-\beta)T$ time periods are then used to fit the parameter $\rho_{s}$.
 \bibliographystyle{amsplain}
 \bibliography{project}
 
