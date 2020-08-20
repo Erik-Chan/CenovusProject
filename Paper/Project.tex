@@ -162,6 +162,25 @@ The parameters
 represent time constraints. The parameter $\psi^{t}$ is an indicator variable for when the congestion surcharge is free ($\psi^{t} =1$) or fixed to zero ($\psi^{t} = 0$). The parameter $M$ represents a large value such that $w_{s}^{t}$ will never reach its upper bound when $\psi^{t} = 1$. Finally $\beta$ is a fraction of time periods for which the underlying network is congested. The remaining $\lceil (1-\beta) T\rceil$ periods with no congestion (and hence $\psi^{t} = 0$) are used to fit $\rho_{s}$  so that we can precisely estimate $w_{s}^{t}$ when $\psi^{t} = 1$. The goal of these is to ensure that $\eta^{t}$, (resp.~$w_{s}^{t}$) are the largest (resp. smallest) possible value out of the set of optimal solutions.
 \section{SEM implementation notes}
 The role of $\beta$ serves a dual purpose. When $\psi^{t}$ is active, the optimization routine determines the set of values $w_{s}^{t}$ that determine the congestion surcharge. However, when $\psi^{t}$ is inactive, the remaining $(1-\beta)T$ time periods are then used to fit the parameter $\rho_{s}$.
+
+\subsubsection{SEM parameter discussion}
+One problem frequently encountered when optimizing the model is the that in nearly every case, all the parameters find optima at $0$, or there is no solution. The key to this appears to be the presence of the term $\eta_{t}$. To better understand the role of $\eta_{t}$, consider the following scenario, modified from \url{http://lpsolve.sourceforge.net/5.5/Infeasible.htm}. In this example, they consider a model
+		\begin{mini*}|s|
+		{}{x + y}{}{}
+		\addConstraint{x \geq 6}
+		\addConstraint{y \geq 6}
+		\addConstraint{x + y \leq 11}
+	\end{mini*}
+which is clearly infeasible. However, if we modify the problem to 
+			\begin{mini*}|s|
+		{}{x + y + 1000z_1 + 1000z_2 + 1000z_3}{}{}
+		\addConstraint{x +z_1\geq 6}
+		\addConstraint{y +z_2\geq 6}
+		\addConstraint{x + y -z_3\leq 11}
+	\end{mini*}
+This has a solution $x = 5, y = 6, z_1 =1, z_2 = 0, z_3 = 0$. Effectively, the slack variables relax the first constraint necessary to have a feasible solution. However, in our case, our solution was already feasible, so by introducing the additional slack parameter $\eta_{t}$, this reduced all other values to $0$ and the slack parameter did all the heavy lifting as it was free to vary to be set to whatever was needed to balance the price decomposition. I expect that in the presence of larger sets $\mathcal{S}$, this will resolve that particular problem, but in our simplified model the $\eta_{t}$ should be removed. Furthermore, note that since we are analyzing the spread price, that is $\lambda_{1}^{t} - \lambda_{2}$. For any price decomposition, we have
+	\[\lambda_{1}^{t} - \lambda_{2}^{t} = \eta^{t} + \rho_{1} + \epsilon_{1}^{t} + w_{1}^{t} - \eta^{t} - \rho_{2} - \epsilon_{2}^{t} - w_{2}^{t}\]
+so that the $\eta_{t}$ cancel and do not contribute to the model.
 \section{Results}
 Using the model, we took $\eta^{t}$ to be a historical WCS time series and $\lambda_{s}^{t}$ to be the price of WTI. After running the code, we get the following results as a function of beta:
 \begin{align*}

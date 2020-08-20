@@ -2,9 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import sdepy
-import itertools
-from itertools import product
-from sys import stdout as out
 from mip import Model, xsum, minimize, BINARY, Var
 
 # Plot Parameters
@@ -28,11 +25,11 @@ df = df.reindex(columns=column_names)
 
 priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
 
+
 ###################################################################################################################
 # This follows the model on page 21 here:
 # http://individual.utoronto.ca/izhu/files/Zhu_FinalPaper2020.pdf
 ###################################################################################################################
-
 
 
 def calc_congestion(beta):
@@ -42,33 +39,38 @@ def calc_congestion(beta):
     # The set \mathcal{S} as in the paper
     verts = ['Cushing']
     S = range(len(verts))
-    localPrices = priceData[['WCS_Interpolated', 'WTI_Interpolated']].to_numpy()
+    localPrices = priceData[['WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']].to_numpy()
+    localPrices[:, 2] = np.round(localPrices[:, 2], 2)
     localPrices[:, 0] = np.round(localPrices[:, 0], 2)
 
     # Initialize optimization model object
     model = Model()
-    #plt.scatter(sorted(localPrices[:,0]), sorted(localPrices[:,1]))
-    #plt.show()
+    # plt.scatter(sorted(localPrices[:,0]), sorted(localPrices[:,1]))
+    # plt.show()
     ###################################################################################################################
     # Constants
     ###################################################################################################################
-    M = np.max(localPrices) - np.min(localPrices)
 
-    eta_t = localPrices[:, 0]
-    #print('My eta_t are:', eta_t)
-    #plt.plot(eta_t)
+    # This parameter may need to be relooked at if we investigate spreads
+    M = np.max(localPrices[:, 2]) - np.min(localPrices[:, 2])
+
+    # We set eta_t to be identically equal to 0 because it is causing overfitting problems.
+    # eta_t = [0 for t in T]
+    # eta_t = [localPrices[:, 0]]
+    # print('My eta_t are:', eta_t)
+    # plt.plot(eta_t)
 
     # plt.show()
 
-    lambda_t = localPrices[:, 1]
-    #print('My lambda_t are:', lambda_t)
-    #plt.plot(lambda_t)
+    lambda_t = localPrices[:, 2]
+    # print('My lambda_t are:', lambda_t)
+    # plt.plot(lambda_t)
     # plt.show()
     ###################################################################################################################
     # Variables
     ###################################################################################################################
-    #These are the eta_t
-    #eta_t = np.array([model.add_var() for t in T])
+    # These are the eta_t
+    # eta_t = np.array([model.add_var() for t in T])
 
     # These are the alpha_s
     alpha_s = np.array([model.add_var() for s in S])
@@ -97,8 +99,8 @@ def calc_congestion(beta):
     for s in S:
         for t in T:
             # These are constraints (18b)
-            model += eta_t[t] + rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_t[t]
-
+            # model += eta_t[t] + rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_t[t]
+            model += rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_t[t]
             # Constraint (18c)
             model += eps_st[s][t] >= -alpha_s[s]
 
@@ -107,7 +109,6 @@ def calc_congestion(beta):
 
             # Constraint (18e)
             model += w_st[s][t] <= psi_t[t] * M
-
 
     # Constraint (18f)
     model += xsum(psi_t) <= np.floor(beta * len(T))
@@ -147,10 +148,8 @@ def calc_congestion(beta):
     if toggle:
         m = 5
 
-
         def T_ub(t, m, T):
-            return min(len(T), t+m)
-
+            return min(len(T), t + m)
 
         def T_lb(t, m):
             return max(0, t - m)
@@ -189,7 +188,7 @@ def calc_congestion(beta):
     display_parameters = 1
     if toggle_optimize:
         model.optimize()
-        #if model.num_solutions:
+        # if model.num_solutions:
         if display_parameters:
             print('The solution for alpha_s at the minimum is :', alpha_s[0].x)
             print('The solution for rho_s at the minimum is :', rho_s[0].x)
@@ -213,13 +212,16 @@ def calc_congestion(beta):
             flat_gamma = [item for sublist in gamma_st for item in sublist]
             flat_gamma = [gam.x for gam in flat_gamma]
             print('The sum of the gamma are:', sum(flat_gamma))
+            # print('My eta_t are:', [sol.x for sol in eta_t])
 
     return sum(W_list)
 
-beta = np.array([0. , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.44, 0.49 ,
-       0.55, 0.6 , 0.65, 0.7 , 0.74, 0.8 , 0.85, 0.9 , 0.95])
-omegaList = []
 
+# beta = np.array([0. , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.44, 0.49,
+# 0.55, 0.6 , 0.65, 0.7 , 0.74, 0.8 , 0.85, 0.9 , 0.95])
+beta = np.arange(0.05, 1, 0.05)
+omegaList = []
 for b in beta:
     omegaList.append(calc_congestion(b))
-plt.plot(beta, omegaList)
+outputData = pd.DataFrame({'beta': np.round(beta, 2), 'Sum w': np.round(omegaList, 2)})
+outputData.to_csv('zbeta_output')
