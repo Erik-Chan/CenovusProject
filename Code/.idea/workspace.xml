@@ -40,6 +40,11 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="B:\Users\chaneg\Documents\GitHub\Cenovus-Project\Code" />
+    </key>
+  </component>
   <component name="RunManager" selected="Python.scratch_3">
     <configuration name="CenoSimplifiedModel" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Code" />
