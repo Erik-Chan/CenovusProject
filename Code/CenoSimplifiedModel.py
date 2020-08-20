@@ -164,7 +164,7 @@ def calc_congestion(beta):
             t_star = t
             t_end = T_ub(t, m, T)
             psi_t_star = [psi_t[_t] for _t in range(t, t_end)]
-            model += xsum(psi_t_star) >= nu_t * (len(T) - t_end)
+            model += xsum(psi_t_star) >= nu_t[t] * (len(T) - t_end)
 
         # Constraint 21b
         for t in T:
@@ -203,6 +203,7 @@ def calc_congestion(beta):
                 print('The solution for til_W at city {} is:'.format(s), W_list)
                 print('The solution for eps_st at node s is:'.format(s), eps_list)
                 print('The sum of eps at node s is:'.format(s), sum(eps_list))
+
             psi_list = []
             for t in T:
                 psi_list.append(psi_t[t].x)
@@ -214,14 +215,20 @@ def calc_congestion(beta):
             print('The sum of the gamma are:', sum(flat_gamma))
             # print('My eta_t are:', [sol.x for sol in eta_t])
 
-    return sum(W_list)
+    return W_list, alpha_s[0].x
 
 
 # beta = np.array([0. , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.44, 0.49,
 # 0.55, 0.6 , 0.65, 0.7 , 0.74, 0.8 , 0.85, 0.9 , 0.95])
 beta = np.arange(0.05, 1, 0.05)
 omegaList = []
+W_list = []
 for b in beta:
-    omegaList.append(calc_congestion(b))
-outputData = pd.DataFrame({'beta': np.round(beta, 2), 'Sum w': np.round(omegaList, 2)})
-outputData.to_csv('zbeta_output')
+    W, obj_val = calc_congestion(b)
+    omegaList.append(sum(W))
+    W_list.append(W)
+outputDataW = pd.DataFrame(
+    {'beta': np.round(beta, 2), 'W': W_list, 'Objective Value': obj_val, 'Sum w': np.round(omegaList, 2)})
+# outputData = pd.DataFrame({'beta': np.round(beta,2), 'Sum w': np.round(omegaList,2)})
+# outputData.to_csv('zbeta_data.csv')
+outputDataW.to_csv('Total data.csv')
