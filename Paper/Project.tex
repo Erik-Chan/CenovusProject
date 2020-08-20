@@ -162,6 +162,29 @@ The parameters
 represent time constraints. The parameter $\psi^{t}$ is an indicator variable for when the congestion surcharge is free ($\psi^{t} =1$) or fixed to zero ($\psi^{t} = 0$). The parameter $M$ represents a large value such that $w_{s}^{t}$ will never reach its upper bound when $\psi^{t} = 1$. Finally $\beta$ is a fraction of time periods for which the underlying network is congested. The remaining $\lceil (1-\beta) T\rceil$ periods with no congestion (and hence $\psi^{t} = 0$) are used to fit $\rho_{s}$  so that we can precisely estimate $w_{s}^{t}$ when $\psi^{t} = 1$. The goal of these is to ensure that $\eta^{t}$, (resp.~$w_{s}^{t}$) are the largest (resp. smallest) possible value out of the set of optimal solutions.
 \section{SEM implementation notes}
 The role of $\beta$ serves a dual purpose. When $\psi^{t}$ is active, the optimization routine determines the set of values $w_{s}^{t}$ that determine the congestion surcharge. However, when $\psi^{t}$ is inactive, the remaining $(1-\beta)T$ time periods are then used to fit the parameter $\rho_{s}$.
+\section{Results}
+Using the model, we took $\eta^{t}$ to be a historical WCS time series and $\lambda_{s}^{t}$ to be the price of WTI. After running the code, we get the following results as a function of beta:
+\begin{align*}
+	\texttt{beta} &= \texttt{array}([0.  , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.44, 0.49,
+       0.55, 0.6 , 0.65, 0.7 , 0.74, 0.8 , 0.85, 0.9 , 0.95])\\
+       	\sum_{s,t}w_{s}^{t} &=[ 0.,   131.5,   536.72,  784.81, 1018.5,  1264.23, 1605.08, 2091.21, 2603.48, 2778.6,  2972.15, 3459.97, \\
+       		&3913.22, 4171.72, 4348.43, 4655.71, 5370.29, 5686.33, 5686.33, 5686.33].
+       \end{align*}
+The reason we chose $\beta = 0.44, 0.49, 0.74$ was to slightly perturb the values due to numeric instability. The plot is as follows:
+	\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{surcharges}
+\caption{The plot of $\beta$ vs $\sum_{s,t} w_{s}^{t}$} \label{surcharge}
+\end{figure}
+
+To determine the best value of $\beta$ to use, it is helpful to look at the difference between consecutive $\beta$ to find where the effectiveness of increasing $\beta$ slows down. See Figure~\ref{surchargediff}
+
+	\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{surchargesdiff}
+\caption{The plot of $\beta$ vs slope of $z(\beta)$.} \label{surchargediff}
+\end{figure}
+Here we can see that there is a drop off in effectiveness in $\beta$ at $\beta = 0.1, 0.35, 0.55, 0.8$ suggesting those are the most effective proportion of the market to time susceptible to congestion.
 \bibliographystyle{amsplain}
 \bibliography{project}
 

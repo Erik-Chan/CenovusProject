@@ -28,9 +28,6 @@ df = df.reindex(columns=column_names)
 
 priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
 
-
-# This is just a switch to disable the optimization part of the code when testing things to reduce the runtime
-MSE = 1
 ###################################################################################################################
 # This follows the model on page 21 here:
 # http://individual.utoronto.ca/izhu/files/Zhu_FinalPaper2020.pdf
@@ -38,7 +35,7 @@ MSE = 1
 
 
 
-if MSE:
+def calc_congestion(beta):
     # time in days
     T = range(len(priceData))
 
@@ -50,23 +47,22 @@ if MSE:
 
     # Initialize optimization model object
     model = Model()
-
+    #plt.scatter(sorted(localPrices[:,0]), sorted(localPrices[:,1]))
+    #plt.show()
     ###################################################################################################################
     # Constants
     ###################################################################################################################
     M = np.max(localPrices) - np.min(localPrices)
 
-    beta = 1
-
     eta_t = localPrices[:, 0]
-    print('My eta_t are:', eta_t)
-    plt.plot(eta_t)
+    #print('My eta_t are:', eta_t)
+    #plt.plot(eta_t)
 
     # plt.show()
 
     lambda_t = localPrices[:, 1]
-    print('My lambda_t are:', lambda_t)
-    plt.plot(lambda_t)
+    #print('My lambda_t are:', lambda_t)
+    #plt.plot(lambda_t)
     # plt.show()
     ###################################################################################################################
     # Variables
@@ -193,6 +189,7 @@ if MSE:
     display_parameters = 1
     if toggle_optimize:
         model.optimize()
+        #if model.num_solutions:
         if display_parameters:
             print('The solution for alpha_s at the minimum is :', alpha_s[0].x)
             print('The solution for rho_s at the minimum is :', rho_s[0].x)
@@ -216,3 +213,13 @@ if MSE:
             flat_gamma = [item for sublist in gamma_st for item in sublist]
             flat_gamma = [gam.x for gam in flat_gamma]
             print('The sum of the gamma are:', sum(flat_gamma))
+
+    return sum(W_list)
+
+beta = np.array([0. , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.44, 0.49 ,
+       0.55, 0.6 , 0.65, 0.7 , 0.74, 0.8 , 0.85, 0.9 , 0.95])
+omegaList = []
+
+for b in beta:
+    omegaList.append(calc_congestion(b))
+plt.plot(beta, omegaList)
