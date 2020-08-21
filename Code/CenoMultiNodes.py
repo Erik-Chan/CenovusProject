@@ -11,6 +11,24 @@ plt.rcParams['lines.linewidth'] = 1.
 ###########################################
 np.random.seed(1)
 
+###################################################################################################################
+# Setting up OU simulations
+###################################################################################################################
+
+@sdepy.integrate
+def my_ou(t, x, theta=1., k=1., sigma=1.):
+    return {'dt': k * (x-theta), 'dw': sigma}
+T = 1
+t = np.linspace(0, T, 655)
+
+x = my_ou(x0= 16.31, k = 0.011928352054776574, theta = 16.31,
+          sigma = 1.00597006920309, paths = 1, steps = len(t))(t)
+#x = [item for sublist in x for item in sublist]
+
+###################################################################################################################
+# Preliminary Data Cleaning
+###################################################################################################################
+
 url = 'https://raw.githubusercontent.com/Erik-Chan/Crude-Oil-Data/master/Data/Cleaned_WTI_WSC.csv'
 
 df = pd.read_csv(url)
@@ -33,6 +51,8 @@ priceData = priceData.assign(Wood_River=lambda x: x['WTI_WCS_diff'] + 5.25 + np.
 
 priceData = priceData.assign(Cushing=lambda x: x['WTI_WCS_diff'])
 
+#priceData = priceData.assign(Phantom= x)
+
 ###################################################################################################################
 # This follows the model on page 21 here:
 # http://individual.utoronto.ca/izhu/files/Zhu_FinalPaper2020.pdf
@@ -44,6 +64,7 @@ def calc_congestion(beta):
 
     # The set \mathcal{S} as in the paper
     verts = ['Edmonton', 'Chicago', 'Wood_River', 'Cushing']
+    #verts = ['Edmonton', 'Chicago', 'Wood_River', 'Cushing', 'Phantom']
     S = range(len(verts))
     localPrices = priceData[verts].to_numpy()
     localPrices[:,:] = np.round(localPrices[:,:],2)
@@ -106,7 +127,7 @@ def calc_congestion(beta):
         for t in T:
             # These are constraints (18b)
             model += eta_t[t] + rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_ts[t][s]
-            #model += rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_t[t]
+            #model += rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_ts[t][s]
             # Constraint (18c)
             model += eps_st[s][t] >= -alpha_s[s]
 
@@ -150,9 +171,9 @@ def calc_congestion(beta):
     ###################################################################################################################
     # Optional Constraints and Variables 21a, 21b, 21c
     ###################################################################################################################
-    toggle = 1
+    toggle = 0
     if toggle:
-        m = 5
+        m = 3
 
         def T_ub(t, m, T):
             return min(len(T), t + m)
@@ -196,9 +217,9 @@ def calc_congestion(beta):
         model.optimize()
         # if model.num_solutions:
         if display_parameters:
-            print('The solution for alpha_s at the minimum is :', alpha_s[0].x, alpha_s[1].x, alpha_s[2].x, alpha_s[3].x)
-            print('The solution for rho_s at the minimum is :', rho_s[0].x. rho_s[1].x, rho_s[2].x, rho_s[3].x)
-
+            print('The solution for alpha_s at the minimum is :', [opt.x for opt in alpha_s])
+            print('The solution for rho_s at the minimum is :', [opt.x for opt in rho_s])
+            Plot_W_List = []
             for s in S:
                 W_list = []
                 eps_list = []
@@ -206,9 +227,10 @@ def calc_congestion(beta):
                     W_list.append(w_st[s][t].x)
                     W_list = [round(w, 2) for w in W_list]
                     eps_list.append(eps_st[s][t].x)
-                print('The solution for til_W at city {} is:'.format(s), W_list)
-                print('The solution for eps_st at node {} is:'.format(s), eps_list)
-                print('The sum of eps at node {} is:'.format(s), sum(eps_list))
+                print('The solution for til_W at city {} is:'.format(verts[s]), W_list)
+                Plot_W_List.append(W_list)
+                print('The solution for eps_st at city {} is:'.format(verts[s]), eps_list)
+                print('The sum of eps at city {} is:'.format(verts[s]), sum(eps_list))
 
             psi_list = []
             for t in T:
@@ -221,7 +243,7 @@ def calc_congestion(beta):
             print('The sum of the gamma are:', sum(flat_gamma))
             # print('My eta_t are:', [sol.x for sol in eta_t])
 
-    return W_list, alpha_s[0].x
+    return Plot_W_List, [opt.x for opt in alpha_s]
 
 
 # beta = np.array([0. , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.44, 0.49,
@@ -229,13 +251,19 @@ def calc_congestion(beta):
 beta = np.arange(0.05, 1, 0.05)
 omegaList = []
 W_list = []
-beta = [0.5]
+beta = [1]
 for b in beta:
     W, obj_val = calc_congestion(b)
-    omegaList.append(sum(W))
+    omegaList.append([sum(s) for s in W])
     W_list.append(W)
-outputDataW = pd.DataFrame(
-    {'beta': np.round(beta, 2), 'W': W_list, 'Objective Value': obj_val, 'Sum w': np.round(omegaList, 2)})
+
+    for s in W_list:
+        for ss in s:
+            plt.plot(df['DateTime'], ss)
+            plt.show()
+
+#outputDataW = pd.DataFrame({'beta': np.round(beta, 2), 'W': W_list, 'Objective Value': obj_val, 'Sum w': np.round(omegaList, 2)})
 # outputData = pd.DataFrame({'beta': np.round(beta,2), 'Sum w': np.round(omegaList,2)})
 # outputData.to_csv('zbeta_data.csv')
-outputDataW.to_csv('Total data.csv')
+
+#outputDataW.to_csv('Total data.csv')
