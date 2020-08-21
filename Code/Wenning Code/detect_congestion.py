@@ -31,6 +31,7 @@ b = np.arange(0,1,0.05)
 
 omegasum = []
 myb = []
+
 for beta in b:
 
     model = Model()
