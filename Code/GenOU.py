@@ -20,6 +20,7 @@ T = 1
 t = np.linspace(0, T, 655)
 
 #Mean and covariance matrix of the multivariate normal
+#dZ_t dW_t
 mean = (0, 0, 0, 0)
 cov = [[1.0000, 0.8819, 0.8118, 0.5096],
        [0.8819, 1.0000, 0.9744, 0.3065],
@@ -35,7 +36,10 @@ dW = np.random.multivariate_normal(mean, cov, (655))
 
 #X_0 = [5, 4.5, 5.25, 0]
 
-X_0 = [9.87+ 5 + 0.67, 9.87+ 4.5, 9.87 +5.25+ 2.1, 9.87+0]
+X_0 = [9.87+ 5 + 0.67,
+       9.87+ 4.5,
+       9.87 +5.25+ 2.1,
+       9.87+0]
 
 #Mean reversion rate
 k = [0.119, 0.119, 0.119, 0.119]
@@ -56,6 +60,8 @@ for t in range(len(t)):
 
 X_t = np.array(X_t)
 
+
+#X_t = dX_t-1 + X_t-1
 for i in range(len(X_0)):
     plt.plot(X_t[:,i])
 plt.show()
