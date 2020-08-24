@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import sdepy
+from GenOU import *
 from mip import Model, xsum, minimize, BINARY, Var
 
 # Plot Parameters
@@ -10,6 +11,41 @@ plt.rcParams['figure.figsize'] = (20, 6)
 plt.rcParams['lines.linewidth'] = 1.
 ###########################################
 np.random.seed(1)
+
+###################################################################################################################
+# Preliminary Data Cleaning
+###################################################################################################################
+
+url = 'https://raw.githubusercontent.com/Erik-Chan/Crude-Oil-Data/master/Data/Cleaned_WTI_WSC.csv'
+
+X_t = genOU()
+
+df = pd.read_csv(url)
+
+df['DateTime'] = pd.to_datetime(df['DateTime'])
+
+df = df.sort_values(by=['DateTime'])
+
+column_names = ['DateTime', 'WTI', 'WCS', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']
+
+#df = df.reindex(columns=column_names)
+df = df.reset_index(drop=True)
+print(df.head())
+
+priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
+
+priceData = df.assign(Edmonton=lambda x: x['WTI_WCS_diff'])
+
+priceData = priceData.assign(Chicago=lambda x: x['WTI_WCS_diff'])
+
+priceData = priceData.assign(Wood_River=lambda x: x['WTI_WCS_diff'])
+
+priceData = priceData.assign(Cushing=lambda x: x['WTI_WCS_diff'])
+
+priceData['Edmonton'] = X_t[:,0]
+priceData['Chicago'] = X_t[:,1]
+priceData['Wood_River'] = X_t[:,2]
+priceData['Cushing'] = X_t[:,3]
 
 ###################################################################################################################
 # Setting up OU simulations
@@ -25,33 +61,14 @@ x = my_ou(x0= 16.31, k = 0.011928352054776574, theta = 16.31,
           sigma = 1.00597006920309, paths = 1, steps = len(t))(t)
 #x = [item for sublist in x for item in sublist]
 
-###################################################################################################################
-# Preliminary Data Cleaning
-###################################################################################################################
+mean = (5, 4.5, 5.25, 0)
+cov = [[1.0000, 0.8819, 0.8118, 0.5096],
+       [0.8819, 1.0000, 0.9744, 0.3065],
+       [0.8118, 0.9744, 1.0000, 0.2832],
+       [0.5096, 0.3065, 0.2832, 1.0000]]
+x = np.random.multivariate_normal(mean, cov, (655))
 
-url = 'https://raw.githubusercontent.com/Erik-Chan/Crude-Oil-Data/master/Data/Cleaned_WTI_WSC.csv'
-
-df = pd.read_csv(url)
-
-df['DateTime'] = pd.to_datetime(df['DateTime'])
-
-df = df.sort_values(by=['DateTime'])
-
-column_names = ['DateTime', 'WTI', 'WCS', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']
-
-df = df.reindex(columns=column_names)
-
-priceData = df[['DateTime', 'WCS_Interpolated', 'WTI_Interpolated', 'WTI_WCS_diff']]
-
-priceData = df.assign(Edmonton=lambda x: x['WTI_WCS_diff'] + 5 + np.random.uniform(0,1.35))
-
-priceData = priceData.assign(Chicago=lambda x: x['WTI_WCS_diff'] + 4.4)
-
-priceData = priceData.assign(Wood_River=lambda x: x['WTI_WCS_diff'] + 5.25 + np.random.uniform(0,4.2))
-
-priceData = priceData.assign(Cushing=lambda x: x['WTI_WCS_diff'])
-
-#priceData = priceData.assign(Phantom= x)
+print(x)
 
 ###################################################################################################################
 # This follows the model on page 21 here:
@@ -97,7 +114,7 @@ def calc_congestion(beta):
     # Variables
     ###################################################################################################################
     # These are the eta_t
-    eta_t = np.array([model.add_var() for t in T])
+    #eta_t = np.array([model.add_var() for t in T])
 
     # These are the alpha_s
     alpha_s = np.array([model.add_var() for s in S])
@@ -126,8 +143,8 @@ def calc_congestion(beta):
     for s in S:
         for t in T:
             # These are constraints (18b)
-            model += eta_t[t] + rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_ts[t][s]
-            #model += rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_ts[t][s]
+            #model += eta_t[t] + rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_ts[t][s]
+            model += rho_s[s] + eps_st[s][t] + w_st[s][t] == lambda_ts[t][s]
             # Constraint (18c)
             model += eps_st[s][t] >= -alpha_s[s]
 
@@ -167,7 +184,9 @@ def calc_congestion(beta):
     # for s in range(len(verts)):
     # model += alpha_s[s] >= 0
     # model += rho_s[s] >= 2.35
-
+    #for s in S:
+        #for t in T:
+            #model += eps_st[s][t] >= 0
     ###################################################################################################################
     # Optional Constraints and Variables 21a, 21b, 21c
     ###################################################################################################################
