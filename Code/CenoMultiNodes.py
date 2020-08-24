@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import sdepy
-from GenOU  import *
+from GenOU import *
 from mip import Model, xsum, minimize, BINARY, Var
 
 # Plot Parameters
