@@ -1,11 +1,38 @@
 %%
-%% This is file `m2piart.cls',
+%% This is file `m2pi.cls',
+%% generated with the docstrip utility.
+%%
 %% The original source files were:
 %%
 %% amsclass.dtx  (with options: `amsart,classes')
+%% 
+%%% ====================================================================
+%%% @LaTeX-file{
+%%%   filename  = "m2piclass.dtx",
+%%%   version   = "2.30",
+%%%   date      = "2006/08/29",
+%%%   time      = "10:10:05 MDT",
+%%%   author    = "Contributions to Discrete Mathematics",
+%%%   copyright = "Copyright 1995, 1999, 2004
+%%%                American Mathematical Society,
+%%%                all rights reserved.  Copying of this file is
+%%%                authorized only if either:
+%%%                (1) you make absolutely no changes to your copy,
+%%%                including name; OR
+%%%                (2) if you do make changes, you first rename it
+%%%                to some other name.",
+%%%   codetable = "ISO/ASCII",
+%%%   keywords  = "latex, AMS, documentclass, theorem",
+%%%   supported = "yes",
+%%%   abstract  = "This is the source for the amsthm package and three
+%%%                AMS document classes: amsart, amsproc, and amsbook.
+%%%                They are designed for use with LaTeX.",
+%%% }
+%%% ====================================================================
 \NeedsTeXFormat{LaTeX2e}% LaTeX 2.09 can't be used (nor non-LaTeX)
 [1995/06/01]% LaTeX date must be June 1995 or later
-\ProvidesClass{m2piart}[2020/08/21 v1]
+\ProvidesClass{m2pi}[2006/08/29 v2.30]
+
 
 \usepackage{ifpdf}
 
@@ -19,7 +46,6 @@
 \usepackage{rotating}
 \usepackage{pifont}
 
-% Publname included in serieslogo
 \def\publname{}
 \global\expandafter\let\csname ver@amsthm.sty\expandafter\endcsname
   \csname ver@\@currname.\@currext\endcsname
@@ -110,6 +136,14 @@
        \scalebox{0.5}{\includegraphics{bigbwlogo2}}
     \else
        \scalebox{0.2}{\includegraphics{biglogo2}}
+    \fi
+    \newline
+    \publname 
+    \ifx\@empty\currentvolume 
+    \else
+    \fi 
+    \newline \@PII 
+    \ifx\@empty\@dateposted \else \@setdateposted\fi 
   }%
 }
 \def\eonly@logo{%
@@ -126,6 +160,12 @@
     \@parboxrestore \@logofont
     \noindent#1\par\vss
   }%
+}
+\DeclareOption{e-only}{%
+  \def\volinfo{Volume \currentvolume}%
+  \dateposted{Xxxx XX, XXXX}%
+  \def\@setdateposted{\ (\@dateposted)}%
+  \let\article@logo\eonly@logo
 }
 \newif\if@titlepage
 \DeclareOption{titlepage}{\@titlepagetrue}
@@ -581,6 +621,7 @@
 \def\and{\unskip{ }\@@and{ }\ignorespaces}
 \def\maketitle{\par
   \@topnum\z@ % this prevents figures from falling at the top of page 1
+  \@setcopyright
   \thispagestyle{firstpage}% this sets first page specifications
   \uppercasenonmath\shorttitle
   \ifx\@empty\shortauthors \let\shortauthors\shorttitle
@@ -679,6 +720,7 @@
   \def\copyrightyear{#1}%
   \@ifnotempty{#2}{\def\copyrightholder{#2}}%
 }
+\copyrightinfo{}{}
 \def\pagespan#1#2{\setcounter{page}{#1}%
   \ifnum\c@page<\z@ \pagenumbering{roman}\setcounter{page}{-#1}\fi
   \def\start@page{#1}\def\end@page{#2}}
@@ -697,9 +739,9 @@
       \fi}%
   }{}%
 }
-\@ifundefined{ISSN}{\def\ISSN{0000-0000}}{}
+\@ifundefined{ISSN}{\def\ISSN{}}{}
 \newcommand\PII[1]{\def\@PII{#1}}
-\PII{S \ISSN(XX)0000-0}
+\PII{~}
 \newinsert\copyins
 \skip\copyins=1.5pc
 \count\copyins=1000 % magnification factor, 1000 = 100%
@@ -711,7 +753,27 @@
 \newif\if@extracrline  \@extracrlinefalse
 \let\@extracrline\@empty
 \relax
-
+\def\@setcopyright{%
+  \ifx\@empty\@serieslogo
+  \else\ifx\@empty\copyrightyear
+  \else
+    \insert\copyins{\hsize\textwidth
+      \parfillskip\z@\relax
+      \leftskip\z@\@plus.9\textwidth\relax \rightskip\z@\relax
+      \@copyinsfontsize
+      \everypar{}%
+      \vskip-\skip\copyins
+      \if@extracrline
+        \vskip-6pt
+      \fi
+      \nointerlineskip
+      \leavevmode\hfill\vrule\@width\z@\@height\skip\copyins
+      \copyright\copyrightyear\ \copyrightholder\ignorespaces
+      \if@extracrline \@extracrline \fi
+      \par
+      \kern\z@}%
+  \fi\fi
+}
 \def\@combinefloats{%
   \ifx \@toplist\@empty \else \@cflt \fi
   \ifx \@botlist\@empty \else \@cflb \fi
@@ -1884,4 +1946,4 @@ Le-gendre Mar-kov-ian Noe-ther-ian No-vem-ber Rie-mann-ian Sep-tem-ber}
 
 
 %%
-%% End of file `m2pi.cls'.
+%% End of file `cdmart.cls'.

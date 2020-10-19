@@ -2,11 +2,13 @@
 \usetheme{OsloMet}
 \setbeamersize{text margin left=0.5cm,text margin right=0.5cm}
 \usepackage{style}
-
+\usepackage{subfig}
+\usepackage{xcolor}
+\usepackage{hyperref}
 \renewcommand{\S}{\mathcal{S}}
 \newcommand{\T}{\mathcal{T}}
-\author[]{Wenning Wei\\ Mahsa Azizi\\ Erik Chan\\ Xilai Fu\\ S. Parisa Torabi}
-\title{Modeling Canadian\protect\\ Heavy Crude\protect\\ Congestion Pricing}
+\author[]{Mahsa Azizi, Erik Chan\\ Xilai Fu, Nima Safaian\\ S. Parisa Torabi, Wenning Wei}
+\title{Modeling Canadian\\ Heavy Crude\\ Congestion Pricing}
 
 
 \begin{document}
@@ -17,58 +19,64 @@
     \item\Large{Introduction}
     \item Model
     \item Result
-    \item Conclusion
+    \item Future work
 \end{enumerate}
 \end{frame}
 
 \section{Introduction}
-\begin{frame}{Introduction}
-\Large{What effects price benchmark in oil market?}
-
+\begin{frame}{Introduction-Spatial price integration}
 
 \begin{itemize}
 \setlength\itemsep{2em}
-    \item \Large{Crude oil classification (heavy, light)} 
-    \item \Large{Location of extraction}
-    \item \Large{Transportation capacity}
-%%%% Capacitance is not a word that makes sense in this context. This is an electrical engineering term to denote the % ratio of electrical charge.
+    \item \Large{Crude oil classification: Lighter oils are higher in price due to an easier \&  cheaper process in refineries rather than heavy oils }
+    \item \Large{Location of extraction: It needs to be transported to the point of refinery}
+    \item \Large{Transportation capacity: Type of transportation and their capacitance, either pipelines or trains}
+
 \end{itemize}
 \end{frame}
 
-%Why was this commented out? It was agreed in the meeting that you would talk about this time series.
-\begin{frame}{}
-\Large{WTI and WCS prices from January 2018 to August 202}
- \begin{figure}
-\includegraphics[scale=0.3]{OM-images/price.PNG}
-\end{figure}
-\end{frame}
 
 
-\begin{frame}{Introduction (cont.)}
-\Large{Global and US oil price benchmarks set the stage for Alberta prices }
+
+\begin{frame}{Introduction - Oil price benchmarks}
     \begin{itemize}
 \setlength\itemsep{2em}
     \item \Large{West Texas Intermediate(WTI)}
     \item \Large{West Canada Select (WCS)}
+    %Is this relevant.
+    \item Alberta produces 4MM barrels per day. Two-thirds of the WCS production is consumed in United States.
+    \item The spread between WTI and WCS is estimated about \$5 US due to the different oil classification
 \end{itemize}
 \end{frame}
 
-%I highly recommend removing "{Introduction(Cont.)}" from this slide to make as much room as possible for the figure.
-\begin{frame}{Introduction(Cont.)}
+%These figures need to be as large as possible to prevent the content from being clipped.
+%Do not titles to frames like this - it already has a title in the figure.
+\begin{frame}{}
+
 \centering
 \includegraphics[scale=0.50]{OM-images/piplines.png}
+
 \end{frame}
 
-
+%These figures need to be as large as possible to prevent the content from being clipped.
+%Do not titles to frames like this - it already has a title in the figure.
+\begin{frame}{}
+ \begin{figure}
+\includegraphics[scale = 0.40]{image.png}
+\end{figure}
+\end{frame}
 
 \begin{frame}{Model - Price decomposition of the spread}
-We assume that the WTI--WCS price spread follows the following price decomposition
+This model is based off of the work of Birge et al., \emph{Spatial price integration in commodity markets with capacitated transportation networks}, 2020.
+\vspace{0.5cm}
+
+For a network with fixed costs and fixed network structure, we decompose the equilibrium of the WTI--WCS price spread $\lambda^{t}$ as follows:
     \[\lambda^{t} = \rho + \varepsilon^{t} + \omega^{t}\]
 where
 \begin{enumerate}
-    \item $\lambda^{t}$: the WTS--WCS price spread at time $t$;
+    \item $\lambda^{t}$: the WTI--WCS price spread at time $t$;
     \item $\rho$: the transportation cost;
-    \item $\varepsilon^{t}$: an equilibrium asset value;
+    \item $\varepsilon^{t}$: a baseline equilibrium value;
     \item $\omega^{t}$: the congestion surcharge at time $t$.
 \end{enumerate}
 \end{frame}
@@ -90,16 +98,8 @@ The price of a bottle of olive oil is \$15 in Vancouver (YVR) and \$20 in Calgar
 \end{example}
 Is there arbitrage?
 
-No. The price at YVR in the interval [\$12, \$23] and there will be no arbitrage. We call this the \emph{neutral band}.
+No. For any price at YVR in the interval [\$12, \$28] and there will be no arbitrage. We call this the \emph{neutral band}.
 \end{frame}
-%%%can you please title the slides as the content? for example if you are talking about the Model please title it as Model and then the rest, so as results and conclusion 
-
-%OK - I see what you mean
-
-% Please follow the convention say, "Introduction - Something about the introduction"
-% That is, we capitalize Introduction, Model, Result, Conclusion we use a dash and then capitalize the first word after.
-
-
 
 \begin{frame}{Model - A one node model}
 \begin{align*}
@@ -111,10 +111,18 @@ No. The price at YVR in the interval [\$12, \$23] and there will be no arbitrage
 &\sum_t \psi^t \leq \beta T,\\
 &\psi^t \in\{0,1\}, \quad \forall t\in \T.
 \end{align*}
+
+Here $\beta$ and $M$ are constants where $\beta \in [0,1]$ and $M$ is a sufficiently large upper bound for congestion.
 \end{frame}
 
+\begin{frame}{}
+\centering
+\vspace{-0.5cm}
+\includegraphics[scale = 0.4]{image3.png}
+\end{frame}
 
-\begin{frame}{Model - Mixed integer programming model}
+\begin{frame}{Model - A multi-node model}
+\vspace{-0.7cm}
 \begin{figure}
 %\footnotesize
 \begin{equation*}
@@ -124,35 +132,63 @@ No. The price at YVR in the interval [\$12, \$23] and there will be no arbitrage
 &-\alpha_s\leq\varepsilon_s^t \leq \alpha_s,\\
 &0\leq\omega_s^t\leq \psi^t M,\\
 &\varepsilon_s^t \geq \alpha_s - (1-\gamma_s^t) M,\\
-&\sum_s \gamma_s^t\geq \psi^t,\\
+&\psi^t \leq \sum_s \gamma_s^t\leq |S|\,\psi^t,\\
 &\sum_t \psi^t \leq \beta T,\\
 &\psi^t, \gamma_s^t \in\{0,1\},
 \end{split}
 \end{equation*}
 \end{figure}
+Here $\beta$ and $M$ are constants where $\beta \in [0,1]$ and $M$ is a sufficiently large upper bound for congestion, and $\lvert \cdot \rvert$ denotes the cardinality of a set.
 \end{frame} 
 
 
-
-
-
-\begin{frame}{Model - Ornstein--Uhlenbeck Process}
-\includegraphics[width=\linewidth]{simulated spread.png}
+\begin{frame}{Model - Ornstein--Uhlenbeck process}
+$$\operatorname{d}\!S_t = \alpha(\mu-S_t)\,\operatorname{d}\!t +\sigma \,\operatorname{d}\!W_t$$
+\bigskip
+The SDE is calibrated to the WTI/WCS spread with parameters: 
+$$\alpha = 0.0119, \quad \mu = 16.3,\quad\sigma = 1.45.$$
+We simulate three paths using the correlation matrix:
+%\begin{equation*}
+%\left[
+%\begin{array}{lr}
+%             &~1~~~~~0.8~~~~~0.7\\
+%             &0.8~~~~1~~ ~~0.56\\
+%            & 0.7~~~~0.56~~~~~1 
+%             \end{array}
+%\right].
+%\end{equation*}
+\begin{equation*}\operatorname{corr} = 
+    \begin{bmatrix}
+    1& 0.8& 0.7\\
+    0.8& 1 &0.56\\
+    0.7 & 0.56 &1
+    \end{bmatrix}
+\end{equation*}
 \end{frame}
 
 
-\section{Progress}
+\begin{frame}{Simulated paths of the spread}
+\includegraphics[width=\linewidth]{simulated spread (1).png}
+\end{frame}
 
 
-\begin{frame}{Progress(Cont.)}
-\Large{The percentage of the time that congestion happens}
- \begin{figure}
-\includegraphics[scale=0.5]{OM-images/betha.png}
+%\begin{frame}{Estimated congestion surcharge for $\beta = 0.4$}
+%\begin{figure}
+%   \includegraphics[scale = 0.55]{3node_beta.4.png}
+%\end{figure}
+%\end{frame}
+
+\begin{frame}{Estimated congestion surcharge for $\beta = 0.6$}
+\begin{figure}
+    \includegraphics[scale = 0.55]{3node_beta.6.png}
 \end{figure}
 \end{frame}
 
-\begin{frame}{THIS SLIDE FOR THANKS}
-    
+
+\begin{frame}[c]{}
+    \begin{center}
+        \huge{Thank you for your attention.}
+    \end{center}
 \end{frame}
 
 \end{document}
